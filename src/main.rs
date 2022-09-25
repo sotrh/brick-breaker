@@ -91,18 +91,18 @@ async fn run() -> Result<(), anyhow::Error> {
     };
     surface.configure(&device, &surf_cfg);
 
-    let game_state = State::MainMenu;
     let texture_atlas = TextureAtlas::with_json(&device, &queue, "./assets/atlas.json")?;
     // TODO: make the camera centerable
     let box_renderer =
-        BoxRenderer::new(&device, surf_cfg.format, glam::vec2(100.0, 100.0), &texture_atlas)?;
+        BoxRenderer::new(&device, surf_cfg.format, glam::vec2(80.0, 80.0), &texture_atlas)?;
     let mut controller = input::Controller::new();
     let mut state = state::State::new(
-        glam::vec2(100.0, 100.0),
+        glam::vec2(80.0, 80.0),
         glam::vec2(10.0, 3.0),
+        texture_atlas.get_sprite("ball").unwrap().size,
         texture_atlas.get_sprite("brick1").unwrap().size,
     );
-    state.setup_bricks(12, 5);
+    state.setup_bricks(10, 5);
     let mut movement = system::MovementSystem::new(10.0);
 
     window.set_visible(true);

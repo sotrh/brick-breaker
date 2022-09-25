@@ -3,7 +3,7 @@ use std::{collections::HashMap, hash::Hash, mem::size_of, cell::Cell};
 use image::EncodableLayout;
 use wgpu::util::DeviceExt;
 
-use crate::state::State;
+use crate::state::{State, self};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -169,13 +169,32 @@ impl BoxRenderer {
         indices.push(index + 3);
         index += 4;
 
+        let min = state.ball.body.pos;
+        let max = min + state.ball.body.size;
+        let sprite = texture_atlas.get_sprite("ball").unwrap();
+        let uv_min = sprite.min * scale;
+        let uv_max = (sprite.min + sprite.size) * scale;
+
+        vertices.push(BoxVertex { position: min, uv: uv_min });
+        vertices.push(BoxVertex { position: glam::vec2(max.x, min.y), uv: glam::vec2(uv_max.x, uv_min.y) });
+        vertices.push(BoxVertex { position: max, uv: uv_max });
+        vertices.push(BoxVertex { position: glam::vec2(min.x, max.y), uv: glam::vec2(uv_min.x, uv_max.y) });
+
+        indices.push(index);
+        indices.push(index + 1);
+        indices.push(index + 2);
+        indices.push(index);
+        indices.push(index + 2);
+        indices.push(index + 3);
+        index += 4;
+
+
         for brick in &state.bricks {
             let body = &brick.body; 
             let min = body.pos;
             let max = min + body.size;
             let sprite_id = format!("brick{}", brick.status);
             if let Some(sprite) = texture_atlas.get_sprite(&sprite_id) {
-                let scale = glam::vec2(1.0 / texture_atlas.width() as f32, 1.0 / texture_atlas.height() as f32);
                 let uv_min = sprite.min * scale;
                 let uv_max = (sprite.min + sprite.size) * scale;
                 
