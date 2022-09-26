@@ -60,6 +60,96 @@
                 4,
                 4
             ]
+        },
+        "title": {
+            "min": [
+                3,
+                4
+            ],
+            "size": [
+                43,
+                22
+            ]
+        },
+        "start_button": {
+            "min": [
+                2,
+                29
+            ],
+            "size": [
+                25,
+                10
+            ]
+        },
+        "start_button_alt": {
+            "min": [
+                2,
+                40
+            ],
+            "size": [
+                25,
+                8
+            ]
+        },
+        "exit_button": {
+            "min": [
+                2,
+                51
+            ],
+            "size": [
+                17,
+                10
+            ]
+        },
+        "exit_button_alt": {
+                "min": [
+                    2,
+                    62
+                ],
+                "size": [
+                    17,
+                    8
+                ]
+        },
+        "fullscreen": {
+            "min": [
+                2,
+                74
+            ],
+            "size": [
+                50,
+                10
+            ]
+        },
+        "fullscreen_alt": {
+            "min": [
+                2,
+                85
+            ],
+            "size": [
+                50,
+                8
+            ]
+        },
+        "check_box": {
+            "min": [
+                56,
+                73
+            ],
+            "size": [
+                10,
+                9
+            ]
+        },
+        "check_box_alt": {
+            "min": [
+                67,
+                75
+            ],
+            "size": [
+                7,
+                7
+            ]
         }
     }
 }

@@ -10,6 +10,8 @@ pub enum Input {
 pub struct Controller {
     left: Axis,
     right: Axis,
+    up: Axis,
+    down: Axis,
     fire: Axis,
     back: Axis,
     cursor_pos: glam::Vec2,
@@ -20,6 +22,8 @@ impl Controller {
         Self {
             left: Default::default(),
             right: Default::default(),
+            up: Default::default(),
+            down: Default::default(),
             fire: Default::default(),
             back: Default::default(),
             cursor_pos: glam::Vec2::ZERO,
@@ -38,13 +42,16 @@ impl Controller {
             Input::KeyboardInput(key, pressed) => match key {
                 VirtualKeyCode::A | VirtualKeyCode::Left => self.left.set_digital(*pressed),
                 VirtualKeyCode::D | VirtualKeyCode::Right => self.right.set_digital(*pressed),
-                VirtualKeyCode::Space | VirtualKeyCode::Up => self.fire.set_digital(*pressed),
+                VirtualKeyCode::W | VirtualKeyCode::Up => self.up.set_digital(*pressed),
+                VirtualKeyCode::S | VirtualKeyCode::Down => self.down.set_digital(*pressed),
+                VirtualKeyCode::Space | VirtualKeyCode::Return => self.fire.set_digital(*pressed),
                 VirtualKeyCode::Escape => self.back.set_digital(*pressed),
                 _ => (),
             }
-            Input::Device(DeviceEvent::Button { button, state }) => {
-                
-            }
+            Input::Device(DeviceEvent::Button { button, state }) => match (button, *state == ElementState::Pressed) {
+                (0, pressed) => self.fire.set_digital(pressed),
+                _ => (),
+            },
             _ => (),
         }
     }
@@ -63,6 +70,14 @@ impl Controller {
 
     pub fn back_just_pressed(&self) -> bool {
         self.back.new_input
+    }
+
+    pub fn up_just_pressed(&self) -> bool {
+        self.up.new_input
+    }
+
+    pub fn down_just_pressed(&self) -> bool {
+        self.down.new_input
     }
 }
 

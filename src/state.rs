@@ -40,8 +40,9 @@ impl State {
         }
     }
 
-    pub fn setup_bricks(&mut self, num_x: u32, num_y: u32) {
+    pub fn setup(&mut self, num_x: u32, num_y: u32) {
         self.bricks.clear();
+        self.player.body.pos = glam::vec2(self.arena_size.x * 0.5 - self.brick_size.x * 0.5, 0.0);
         let padding = self.arena_size.x - self.brick_size.x * num_x as f32;
         let start_x = padding * 0.5;
         for y in 0..num_y {

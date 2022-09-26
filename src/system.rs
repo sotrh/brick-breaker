@@ -25,7 +25,7 @@ impl MovementSystem {
         self.fire = controller.fire_just_pressed();
     }
 
-    pub fn update(&self, state: &mut State, dt: f32) {
+    pub fn update(&self, state: &mut State, dt: f32) -> bool {
         state.player.vel.x = self.dir * self.speed;
         state.player.body.pos += state.player.vel * dt;
 
@@ -88,6 +88,8 @@ impl MovementSystem {
             state.ball.body.pos.y = state.arena_size.y - state.ball.body.size.y;
             state.ball.vel.y *= -1.0;
         }
+
+        state.bricks.len() == 0
     }
 }
 

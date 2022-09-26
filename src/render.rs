@@ -20,6 +20,7 @@ struct Uniforms {
 
 pub struct BoxRenderer {
     layout: wgpu::BindGroupLayout,
+    uniforms: Uniforms,
     resources: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
 }
@@ -138,6 +139,7 @@ impl BoxRenderer {
 
         Ok(Self {
             layout,
+            uniforms,
             resources,
             pipeline,
         })
@@ -232,6 +234,35 @@ pub struct Mesh {
 }
 
 impl Mesh {
+    pub fn from_sprites_with_positions(device: &wgpu::Device, atlas_size: glam::Vec2, data: &[(glam::Vec2, &Sprite)]) -> Self {
+        let mut vertices = Vec::new();
+        let mut indices = Vec::new();
+
+        let scale = 1.0 / atlas_size;
+        let mut index = 0;
+        for (pos, sprite) in data {
+            let min = *pos;
+            let max = min + sprite.size;
+            let uv_min = sprite.min * scale;
+            let uv_max = (sprite.min + sprite.size) * scale;
+
+            vertices.push(BoxVertex { position: min, uv: glam::vec2(uv_min.x, uv_max.y) });
+            vertices.push(BoxVertex { position: glam::vec2(max.x, min.y), uv: glam::vec2(uv_max.x, uv_max.y) });
+            vertices.push(BoxVertex { position: max, uv: glam::vec2(uv_max.x, uv_min.y) });
+            vertices.push(BoxVertex { position: glam::vec2(min.x, max.y), uv: glam::vec2(uv_min.x, uv_min.y) });
+
+            indices.push(index);
+            indices.push(index + 1);
+            indices.push(index + 2);
+            indices.push(index);
+            indices.push(index + 2);
+            indices.push(index + 3);
+            index += 4;
+        }
+
+        Self::from_verts_and_indices(device, vertices, indices)
+    }
+
     fn from_verts_and_indices(device: &wgpu::Device, vertices: Vec<BoxVertex>, indices: Vec<u32>) -> Self {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
@@ -279,6 +310,10 @@ impl TextureAtlas {
     pub fn height(&self) -> u32 {
         self.texture.height
     }
+
+    pub fn size(&self) -> glam::Vec2 {
+        glam::vec2(self.texture.width as f32, self.texture.height as f32)
+    }
 }
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -287,7 +322,7 @@ pub struct Atlas {
     sprites: HashMap<String, Sprite>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, serde::Deserialize)]
 pub struct Sprite {
     pub min: glam::Vec2,
     pub size: glam::Vec2,

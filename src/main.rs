@@ -3,6 +3,7 @@ mod state;
 mod util;
 mod system;
 mod input;
+mod menu;
 
 use std::io::Write;
 
@@ -14,7 +15,7 @@ use winit::{
     window::{Fullscreen, WindowBuilder},
 };
 
-use crate::render::{BoxRenderer, Texture, TextureAtlas};
+use crate::{render::{BoxRenderer, Texture, TextureAtlas}, menu::Menu};
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Settings {
@@ -93,17 +94,20 @@ async fn run() -> Result<(), anyhow::Error> {
 
     let texture_atlas = TextureAtlas::with_json(&device, &queue, "./assets/atlas.json")?;
     // TODO: make the camera centerable
+    let screen_size = glam::vec2(80.0, 80.0);
     let box_renderer =
-        BoxRenderer::new(&device, surf_cfg.format, glam::vec2(80.0, 80.0), &texture_atlas)?;
+        BoxRenderer::new(&device, surf_cfg.format, screen_size, &texture_atlas)?;
     let mut controller = input::Controller::new();
-    let mut state = state::State::new(
-        glam::vec2(80.0, 80.0),
-        glam::vec2(10.0, 3.0),
+    let mut game_state = state::State::new(
+        screen_size,
+        texture_atlas.get_sprite("player").unwrap().size,
         texture_atlas.get_sprite("ball").unwrap().size,
         texture_atlas.get_sprite("brick1").unwrap().size,
     );
-    state.setup_bricks(10, 5);
     let mut movement = system::MovementSystem::new(10.0);
+    let mut menu_up = true;
+    let mut messages = Vec::new();
+    let mut menu = Menu::new(&texture_atlas, screen_size);
 
     window.set_visible(true);
     ev_loop.run(move |ev, _, control_flow| match ev {
@@ -132,8 +136,24 @@ async fn run() -> Result<(), anyhow::Error> {
                 }
                 (key, pressed) => {
                     controller.input(&input::Input::KeyboardInput(key, pressed));
-                    if controller.back_just_pressed() {
-                        *control_flow = ControlFlow::Exit
+                    if menu_up {
+                        menu.input(&controller, &mut messages);
+                        for msg in messages.drain(..) {
+                            match msg {
+                                menu::Message::Exit => *control_flow = ControlFlow::Exit,
+                                menu::Message::Start => {
+                                    menu_up = false;
+                                    game_state.setup(10, 3);
+                                } 
+                                menu::Message::ToggleFullscreen => {
+                                    settings.fullscreen = !settings.fullscreen;
+                                    set_fullscreen(settings.fullscreen, &window);
+                                }
+                            }
+                        }
+                    }
+                    else if controller.back_just_pressed() {
+                        menu_up = true;
                     }
                 },
             },
@@ -148,13 +168,20 @@ async fn run() -> Result<(), anyhow::Error> {
         Event::MainEventsCleared => {}
         Event::RedrawRequested(_) => {
             window.request_redraw();
-            movement.input(&controller);
-            movement.update(&mut state, 1.0 / 60.0);
-
-            let mesh = box_renderer.mesh_from_state(&device, &state, &texture_atlas);
-
+            if !menu_up {
+                movement.input(&controller);
+                if movement.update(&mut game_state, 1.0 / 60.0) {
+                    menu_up = true;
+                }
+            }
+            
             match surface.get_current_texture() {
                 Ok(tex) => {
+                    let mesh = if menu_up {
+                        menu.layout(&device, &settings)
+                    } else {
+                        box_renderer.mesh_from_state(&device, &game_state, &texture_atlas)
+                    };
                     let view = tex
                         .texture
                         .create_view(&wgpu::TextureViewDescriptor::default());
