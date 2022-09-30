@@ -1,9 +1,9 @@
-use std::{collections::HashMap, hash::Hash, mem::size_of, cell::Cell};
+use std::{collections::HashMap, mem::size_of};
 
 use image::EncodableLayout;
 use wgpu::util::DeviceExt;
 
-use crate::state::{State, self};
+use crate::state::State;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -19,7 +19,9 @@ struct Uniforms {
 }
 
 pub struct BoxRenderer {
+    #[allow(dead_code)]
     layout: wgpu::BindGroupLayout,
+    #[allow(dead_code)]
     uniforms: Uniforms,
     resources: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
@@ -331,6 +333,7 @@ pub struct Sprite {
 pub struct Texture {
     width: u32,
     height: u32,
+    #[allow(dead_code)]
     texture: wgpu::Texture,
     sampler: wgpu::Sampler,
     view: wgpu::TextureView,

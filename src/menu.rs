@@ -52,6 +52,7 @@ impl Menu {
     }
 
     pub fn input(&mut self, controller: &input::Controller, messages: &mut Vec<Message>) {
+        let old_focus = self.focus;
         if controller.down_just_pressed() {
             self.focus = match self.focus {
                 Focus::Start => Focus::Exit,
@@ -65,6 +66,10 @@ impl Menu {
                 Focus::Exit => Focus::Start,
                 Focus::Fullscreen => Focus::Exit,
             }
+        }
+
+        if old_focus != self.focus {
+            messages.push(Message::FocusChanged);
         }
 
         if controller.fire_just_pressed() {
@@ -157,6 +162,7 @@ pub enum Message {
     Start,
     Exit,
     ToggleFullscreen,
+    FocusChanged,
 }
 
 pub struct TopDownLayout {
@@ -187,6 +193,7 @@ impl TopDownLayout {
         self.place_with_offset(sprite_size, glam::vec2(offsetx, 0.0))
     }
 
+    #[allow(dead_code)]
     pub fn place_with_offset_y(&mut self, sprite_size: glam::Vec2, offset_y: f32) -> glam::Vec2 {
         self.place_with_offset(sprite_size, glam::vec2(0.0, offset_y))
     }

@@ -1,4 +1,4 @@
-use winit::event::{DeviceEvent, KeyboardInput, ElementState, VirtualKeyCode};
+use winit::event::{DeviceEvent, ElementState, VirtualKeyCode};
 
 #[derive(Debug)]
 pub enum Input {
@@ -14,7 +14,6 @@ pub struct Controller {
     down: Axis,
     fire: Axis,
     back: Axis,
-    cursor_pos: glam::Vec2,
 }
 
 impl Controller {
@@ -26,10 +25,10 @@ impl Controller {
             down: Default::default(),
             fire: Default::default(),
             back: Default::default(),
-            cursor_pos: glam::Vec2::ZERO,
         }
     }
 
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.left.new_input = false;
         self.right.new_input = false;
@@ -60,6 +59,7 @@ impl Controller {
         self.right.value - self.left.value
     }
 
+    #[allow(dead_code)]
     pub fn fire(&self) -> f32 {
         self.fire.value
     }
@@ -88,6 +88,7 @@ pub struct Axis {
 }
 
 impl Axis {
+    #[allow(dead_code)]
     pub fn set(&mut self, value: f32) {
         self.value = value;
         self.new_input = value > 0.0;
@@ -98,10 +99,12 @@ impl Axis {
         self.new_input = pressed;
     }
 
+    #[allow(dead_code)]
     pub fn press(&mut self) {
         self.set(1.0);
     }
-
+    
+    #[allow(dead_code)]
     pub fn release(&mut self) {
         self.set(0.0);
     }

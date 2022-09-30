@@ -4,18 +4,19 @@ mod util;
 mod system;
 mod input;
 mod menu;
+mod sound;
 
-use std::io::Write;
+use std::{io::Write, fs::read_to_string};
 
 use util::*;
 use winit::{
     dpi::LogicalSize,
-    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent, DeviceEvent},
+    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::{Fullscreen, WindowBuilder},
+    window::WindowBuilder,
 };
 
-use crate::{render::{BoxRenderer, Texture, TextureAtlas}, menu::Menu};
+use crate::{render::{BoxRenderer, TextureAtlas}, menu::Menu};
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Settings {
@@ -105,9 +106,14 @@ async fn run() -> Result<(), anyhow::Error> {
         texture_atlas.get_sprite("brick1").unwrap().size,
     );
     let mut movement = system::MovementSystem::new(10.0);
+    let mut game_messages = Vec::new();
+
     let mut menu_up = true;
-    let mut messages = Vec::new();
+    let mut menu_messages = Vec::new();
     let mut menu = Menu::new(&texture_atlas, screen_size);
+
+    let sound_config = read_to_string("./assets/sounds.json")?;
+    let mut sound_system = sound::SoundSystem::with_json(&sound_config)?;
 
     window.set_visible(true);
     ev_loop.run(move |ev, _, control_flow| match ev {
@@ -137,8 +143,8 @@ async fn run() -> Result<(), anyhow::Error> {
                 (key, pressed) => {
                     controller.input(&input::Input::KeyboardInput(key, pressed));
                     if menu_up {
-                        menu.input(&controller, &mut messages);
-                        for msg in messages.drain(..) {
+                        menu.input(&controller, &mut menu_messages);
+                        for msg in menu_messages.drain(..) {
                             match msg {
                                 menu::Message::Exit => *control_flow = ControlFlow::Exit,
                                 menu::Message::Start => {
@@ -148,6 +154,9 @@ async fn run() -> Result<(), anyhow::Error> {
                                 menu::Message::ToggleFullscreen => {
                                     settings.fullscreen = !settings.fullscreen;
                                     set_fullscreen(settings.fullscreen, &window);
+                                }
+                                menu::Message::FocusChanged => {
+                                    sound_system.play_sound("bounce");
                                 }
                             }
                         }
@@ -170,8 +179,14 @@ async fn run() -> Result<(), anyhow::Error> {
             window.request_redraw();
             if !menu_up {
                 movement.input(&controller);
-                if movement.update(&mut game_state, 1.0 / 60.0) {
-                    menu_up = true;
+                movement.update(&mut game_state, 1.0 / 60.0, &mut game_messages);
+                for msg in game_messages.drain(..) {
+                    match msg {
+                        system::Message::Win => menu_up = true,
+                        system::Message::Fire => sound_system.play_sound("fire"),
+                        system::Message::Bounce => sound_system.play_sound("bounce"),
+                        system::Message::Drop => sound_system.play_sound("fail")
+                    }
                 }
             }
             

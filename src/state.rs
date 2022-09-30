@@ -1,4 +1,5 @@
 pub struct State {
+    pub game_just_started: bool,
     pub bricks: Vec<Brick>,
     pub player: Player,
     pub ball: Ball,
@@ -19,6 +20,7 @@ impl State {
             player_pos.y + player_size.y + ball_size.y * 0.5,
         );
         Self {
+            game_just_started: false,
             bricks: Vec::new(),
             player: Player {
                 body: Body {
@@ -41,6 +43,7 @@ impl State {
     }
 
     pub fn setup(&mut self, num_x: u32, num_y: u32) {
+        self.game_just_started = true;
         self.bricks.clear();
         self.player.body.pos = glam::vec2(self.arena_size.x * 0.5 - self.brick_size.x * 0.5, 0.0);
         let padding = self.arena_size.x - self.brick_size.x * num_x as f32;
@@ -59,10 +62,6 @@ impl State {
                 });
             }
         }
-    }
-
-    pub fn remove_body(&mut self, index: usize) {
-        self.bricks.remove(index);
     }
 }
 
