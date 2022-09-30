@@ -1,0 +1,23 @@
+{
+    "bounce": {
+        "files": [
+            "./assets/bounce_1.wav",
+            "./assets/bounce_2.wav",
+            "./assets/bounce_3.wav"
+        ]
+    },
+    "fail": {
+        "files": [
+            "./assets/fail_1.wav",
+            "./assets/fail_2.wav",
+            "./assets/fail_3.wav"
+        ]
+    },
+    "fire": {
+        "files": [
+            "./assets/fire_1.wav",
+            "./assets/fire_2.wav",
+            "./assets/fire_3.wav"
+        ]
+    }
+}
