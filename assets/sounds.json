@@ -19,5 +19,10 @@
             "./assets/fire_2.wav",
             "./assets/fire_3.wav"
         ]
+    },
+    "win": {
+        "files": [
+            "./assets/win.wav"
+        ]
     }
 }

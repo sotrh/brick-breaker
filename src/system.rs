@@ -72,7 +72,9 @@ impl MovementSystem {
                     state.ball.body.pos.y = brick.body.pos.y - brick.body.size.y - state.ball.body.size.y;
                     state.ball.vel.y *= -1.0;
     
-                    brick.status -= 1;
+                    if brick.status > 0 {
+                        brick.status -= 1;
+                    }
     
                     if brick.status <= 0 {
                         bricks_to_remove.push(i);

@@ -58,7 +58,7 @@ impl State {
                         ),
                         size: self.brick_size,
                     },
-                    status: 4,
+                    status: 4 - y % 4,
                 });
             }
         }

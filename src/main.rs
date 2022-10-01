@@ -58,7 +58,6 @@ async fn run() -> Result<(), anyhow::Error> {
     } else {
         window.set_inner_size(LogicalSize::new(settings.width, settings.height));
     }
-    println!("settings: {:?}", settings);
 
     let instance = wgpu::Instance::new(wgpu::Backends::all());
     let surface = unsafe { instance.create_surface(&window) };
@@ -94,7 +93,6 @@ async fn run() -> Result<(), anyhow::Error> {
     surface.configure(&device, &surf_cfg);
 
     let texture_atlas = TextureAtlas::with_json(&device, &queue, "./assets/atlas.json")?;
-    // TODO: make the camera centerable
     let screen_size = glam::vec2(80.0, 80.0);
     let box_renderer =
         BoxRenderer::new(&device, surf_cfg.format, screen_size, &texture_atlas)?;
@@ -149,7 +147,7 @@ async fn run() -> Result<(), anyhow::Error> {
                                 menu::Message::Exit => *control_flow = ControlFlow::Exit,
                                 menu::Message::Start => {
                                     menu_up = false;
-                                    game_state.setup(10, 3);
+                                    game_state.setup(10, 4);
                                 } 
                                 menu::Message::ToggleFullscreen => {
                                     settings.fullscreen = !settings.fullscreen;
@@ -182,10 +180,13 @@ async fn run() -> Result<(), anyhow::Error> {
                 movement.update(&mut game_state, 1.0 / 60.0, &mut game_messages);
                 for msg in game_messages.drain(..) {
                     match msg {
-                        system::Message::Win => menu_up = true,
+                        system::Message::Win => {
+                            menu_up = true;
+                            sound_system.play_sound("win")
+                        }
                         system::Message::Fire => sound_system.play_sound("fire"),
                         system::Message::Bounce => sound_system.play_sound("bounce"),
-                        system::Message::Drop => sound_system.play_sound("fail")
+                        system::Message::Drop => sound_system.play_sound("fail"),
                     }
                 }
             }
